@@ -25,12 +25,12 @@ class CalculatorDisplay extends ConsumerWidget {
           : const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
       decoration: BoxDecoration(
         color: isRetroGold
-            ? const Color(0xFFDCB765)
+            ? const Color(0xFF444229)
             : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: isRetroGold
-              ? const Color(0xFFDCB765)
+              ? const Color(0xFF444229)
               : theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
           width: 1,
         ),
@@ -50,14 +50,14 @@ class CalculatorDisplay extends ConsumerWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: isRetroGold 
-                          ? const Color(0xFF383542)
+                          ? const Color(0xFF0F0F0F)
                           : theme.colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       calcState.isDegMode ? 'DEG' : 'RAD',
                       style: theme.textTheme.labelMedium?.copyWith(
-                        color: isRetroGold ? const Color(0xFFF0A352) : theme.colorScheme.onPrimaryContainer,
+                        color: isRetroGold ? const Color(0xFFB5AC75) : theme.colorScheme.onPrimaryContainer,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -82,7 +82,7 @@ class CalculatorDisplay extends ConsumerWidget {
                 minFontSize: 14,
                 style: theme.textTheme.headlineSmall?.copyWith(
                   color: isRetroGold
-                      ? const Color(0xFF101010).withValues(alpha: 0.7)
+                      ? const Color(0xFFB5AC75).withValues(alpha: 0.8)
                       : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
                   fontFamily: 'RobotoMono',
                   fontWeight: FontWeight.w400,
@@ -104,7 +104,7 @@ class CalculatorDisplay extends ConsumerWidget {
                 minFontSize: 20,
                 style: theme.textTheme.displayMedium?.copyWith(
                   color: isRetroGold
-                      ? const Color(0xFF101010)
+                      ? const Color(0xFFDBDBDB)
                       : theme.colorScheme.onSurface,
                   fontFamily: 'RobotoMono',
                   fontWeight: FontWeight.w600,

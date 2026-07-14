@@ -59,13 +59,13 @@ class CalculatorApp extends ConsumerWidget {
           break;
         case 'retro_gold':
           colorScheme = ColorScheme.fromSeed(
-            seedColor: const Color(0xFFF0A352),
+            seedColor: const Color(0xFFB5AC75),
             brightness: Brightness.dark,
-            primary: const Color(0xFFF0A352),
-            surface: const Color(0xFF101010),
-            surfaceContainerHigh: const Color(0xFF383542),
+            primary: const Color(0xFFB5AC75),
+            surface: const Color(0xFF000000),
+            surfaceContainerHigh: const Color(0xFF1F1F1F),
           );
-          scaffoldColor = const Color(0xFF101010);
+          scaffoldColor = const Color(0xFF000000);
           break;
         case 'dark':
         default:

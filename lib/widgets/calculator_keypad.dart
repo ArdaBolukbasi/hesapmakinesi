@@ -276,7 +276,11 @@ class _CalculatorButtonState extends ConsumerState<CalculatorButton> with Single
     // Dynamic colors based on button type
     Color getBgColor() {
       if (isRetroGold) {
-        return const Color(0xFF383542); // Retro dark purple-grey
+        if (widget.type == ButtonType.number) {
+          return const Color(0xFF1F1F1F);
+        } else {
+          return const Color(0xFF0F0F0F);
+        }
       }
 
       switch (widget.type) {
@@ -295,11 +299,13 @@ class _CalculatorButtonState extends ConsumerState<CalculatorButton> with Single
 
     Color getTextColor() {
       if (isRetroGold) {
-        // AC, +/- and all scientific functions are orange/gold
-        final isFunctionOrAcOrNegate = widget.text == 'AC' ||
-            widget.text == '+/-' ||
-            widget.type == ButtonType.function;
-        return isFunctionOrAcOrNegate ? const Color(0xFFF0A352) : Colors.white;
+        if (widget.text == 'AC') {
+          return const Color(0xFFB5AC75);
+        } else if (widget.type == ButtonType.number) {
+          return const Color(0xFFDBDBDB);
+        } else {
+          return const Color(0xFFB5B5B5);
+        }
       }
 
       switch (widget.type) {
