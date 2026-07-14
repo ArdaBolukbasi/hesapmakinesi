@@ -8,6 +8,7 @@ import 'package:uuid/uuid.dart';
 
 import '../models/history_item.dart';
 import '../utils/number_formatter.dart';
+import 'settings_provider.dart';
 
 class CalculatorState {
   final bool isScientific;
@@ -54,6 +55,16 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
   double? _lastPercentBase;
 
   final _uuid = const Uuid();
+
+  String _format(String value) {
+    final useComma = ref.read(settingsProvider).useCommaDecimal;
+    return NumberFormatter.format(value, useCommaDecimal: useComma);
+  }
+
+  String _formatResult(double result) {
+    final useComma = ref.read(settingsProvider).useCommaDecimal;
+    return NumberFormatter.formatResult(result, useCommaDecimal: useComma);
+  }
 
   @override
   CalculatorState build() {
@@ -227,7 +238,7 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
         current = current.substring(0, current.length - 1);
         if (current.isEmpty || current == '-') current = '0';
         state = state.copyWith(
-          displayValue: NumberFormatter.format(current),
+          displayValue: _format(current),
         );
       }
     }
@@ -269,14 +280,14 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
           }
         }
         state = state.copyWith(
-          displayValue: NumberFormatter.format(current),
+          displayValue: _format(current),
         );
       }
 
       // Update the expression formula view
       if (_operandA != null && _operator != null) {
         state = state.copyWith(
-          formulaValue: '${NumberFormatter.formatResult(_operandA!)} $_operator ${state.displayValue}',
+          formulaValue: '${_formatResult(_operandA!)} $_operator ${state.displayValue}',
         );
       } else {
         state = state.copyWith(formulaValue: state.displayValue);
@@ -296,8 +307,8 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
           final double percentVal = _lastPercentResult!;
           final double res = mappedOperator == '+' ? base + percentVal : base - percentVal;
 
-          final String finalDisplay = NumberFormatter.formatResult(res);
-          final String finalFormula = '${NumberFormatter.formatResult(base)} ${_operator ?? ""} ${NumberFormatter.formatResult(percentVal)} ${mappedOperator == '+' ? '+' : '-'}';
+          final String finalDisplay = _formatResult(res);
+          final String finalFormula = '${_formatResult(base)} ${_operator ?? ""} ${_formatResult(percentVal)} ${mappedOperator == '+' ? '+' : '-'}';
           
           _addToHistory(finalFormula, finalDisplay);
 
@@ -318,7 +329,7 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
           _operator = mappedOperator;
 
           state = state.copyWith(
-            formulaValue: '${NumberFormatter.formatResult(currentVal)} $key',
+            formulaValue: '${_formatResult(currentVal)} $key',
             shouldResetDisplay: true,
           );
         }
@@ -346,8 +357,8 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
         _operator = mappedOperator;
 
         state = state.copyWith(
-          displayValue: NumberFormatter.formatResult(res),
-          formulaValue: '${NumberFormatter.formatResult(res)} $key',
+          displayValue: _formatResult(res),
+          formulaValue: '${_formatResult(res)} $key',
           shouldResetDisplay: true,
         );
       } else {
@@ -356,7 +367,7 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
         _operator = mappedOperator;
 
         state = state.copyWith(
-          formulaValue: '${NumberFormatter.formatResult(_operandA!)} $key',
+          formulaValue: '${_formatResult(_operandA!)} $key',
           shouldResetDisplay: true,
         );
       }
@@ -372,8 +383,8 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
 
         if (_operator == '*' || _operator == '/') {
           final double res = _operator == '*' ? percentVal : valA / (valB / 100);
-          final String finalDisplay = NumberFormatter.formatResult(res);
-          final String finalFormula = '${NumberFormatter.formatResult(valA)} $key ${NumberFormatter.formatResult(valB)}%';
+          final String finalDisplay = _formatResult(res);
+          final String finalFormula = '${_formatResult(valA)} $key ${_formatResult(valB)}%';
 
           _lastPercentBase = valA;
           _lastPercentResult = res;
@@ -387,8 +398,8 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
         } else if (_operator == '+' || _operator == '-') {
           // Addition/subtraction with percent completes calculation immediately on standard calculators
           final double res = _operator == '+' ? valA + percentVal : valA - percentVal;
-          final String finalDisplay = NumberFormatter.formatResult(res);
-          final String finalFormula = '${NumberFormatter.formatResult(valA)} $_operator ${NumberFormatter.formatResult(valB)}%';
+          final String finalDisplay = _formatResult(res);
+          final String finalFormula = '${_formatResult(valA)} $_operator ${_formatResult(valB)}%';
 
           _addToHistory(finalFormula, finalDisplay);
 
@@ -408,7 +419,7 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
     // Check if key is Equals (=)
     if (key == '=') {
       if (_isPercentCalculated && _lastPercentBase != null && _lastPercentResult != null) {
-        final String finalFormula = '${NumberFormatter.formatResult(_lastPercentBase!)} ${_operator ?? "*"} ${NumberFormatter.formatResult(_lastPercentResult! / _lastPercentBase! * 100)}%';
+        final String finalFormula = '${_formatResult(_lastPercentBase!)} ${_operator ?? "*"} ${_formatResult(_lastPercentResult! / _lastPercentBase! * 100)}%';
         _addToHistory(finalFormula, state.displayValue);
 
         _resetAccountingState();
@@ -421,8 +432,8 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
         final double valB = double.parse(state.displayValue.replaceAll(',', ''));
         final double res = _evaluateBasic(valA, valB, _operator!);
 
-        final String finalDisplay = NumberFormatter.formatResult(res);
-        final String finalFormula = '${NumberFormatter.formatResult(valA)} ${_operator == '*' ? '×' : (_operator == '/' ? '÷' : _operator!)} ${NumberFormatter.formatResult(valB)}';
+        final String finalDisplay = _formatResult(res);
+        final String finalFormula = '${_formatResult(valA)} ${_operator == '*' ? '×' : (_operator == '/' ? '÷' : _operator!)} ${_formatResult(valB)}';
 
         if (res.isNaN || res.isInfinite) {
           state = state.copyWith(
@@ -548,7 +559,7 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
         return;
       }
 
-      final String formattedResult = NumberFormatter.formatResult(resultDouble);
+      final String formattedResult = _formatResult(resultDouble);
 
       // Save complete calculation to History tape
       _addToHistory(expressionText, formattedResult);

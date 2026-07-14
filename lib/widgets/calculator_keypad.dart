@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/calculator_provider.dart';
+import '../providers/settings_provider.dart';
 
 class CalculatorKeypad extends ConsumerWidget {
   const CalculatorKeypad({super.key});
@@ -12,15 +13,19 @@ class CalculatorKeypad extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final calcState = ref.watch(calculatorProvider);
     final theme = Theme.of(context);
+    
+    // Watch settings to determine localized decimal separator symbol
+    final useComma = ref.watch(settingsProvider).useCommaDecimal;
+    final decimalLabel = useComma ? ',' : '.';
 
     if (calcState.isScientific) {
-      return _buildScientificKeypad(context, ref, theme);
+      return _buildScientificKeypad(context, ref, theme, decimalLabel);
     } else {
-      return _buildAccountingKeypad(context, ref, theme);
+      return _buildAccountingKeypad(context, ref, theme, decimalLabel);
     }
   }
 
-  Widget _buildAccountingKeypad(BuildContext context, WidgetRef ref, ThemeData theme) {
+  Widget _buildAccountingKeypad(BuildContext context, WidgetRef ref, ThemeData theme, String decimalLabel) {
     // 4 columns x 5 rows grid
     final notifier = ref.read(calculatorProvider.notifier);
 
@@ -52,7 +57,7 @@ class CalculatorKeypad extends ConsumerWidget {
       [
         KeypadButtonConfig(text: '0', type: ButtonType.number, onTap: () => notifier.handleKeyPress('0')),
         KeypadButtonConfig(text: '00', type: ButtonType.number, onTap: () => notifier.handleKeyPress('00')),
-        KeypadButtonConfig(text: '.', type: ButtonType.number, onTap: () => notifier.handleKeyPress('.')),
+        KeypadButtonConfig(text: decimalLabel, type: ButtonType.number, onTap: () => notifier.handleKeyPress('.')),
         KeypadButtonConfig(text: '=', type: ButtonType.equals, onTap: () => notifier.handleKeyPress('=')),
       ],
     ];
@@ -61,6 +66,7 @@ class CalculatorKeypad extends ConsumerWidget {
       children: layout.map((row) {
         return Expanded(
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch, // Force buttons to expand vertically
             children: row.map((btn) {
               return Expanded(
                 child: Padding(
@@ -79,7 +85,7 @@ class CalculatorKeypad extends ConsumerWidget {
     );
   }
 
-  Widget _buildScientificKeypad(BuildContext context, WidgetRef ref, ThemeData theme) {
+  Widget _buildScientificKeypad(BuildContext context, WidgetRef ref, ThemeData theme, String decimalLabel) {
     // 5 columns x 6 rows grid
     final notifier = ref.read(calculatorProvider.notifier);
 
@@ -124,7 +130,7 @@ class CalculatorKeypad extends ConsumerWidget {
         KeypadButtonConfig(text: '2', type: ButtonType.number, onTap: () => notifier.handleKeyPress('2')),
         KeypadButtonConfig(text: '3', type: ButtonType.number, onTap: () => notifier.handleKeyPress('3')),
         KeypadButtonConfig(text: '0', type: ButtonType.number, onTap: () => notifier.handleKeyPress('0')),
-        KeypadButtonConfig(text: '.', type: ButtonType.number, onTap: () => notifier.handleKeyPress('.')),
+        KeypadButtonConfig(text: decimalLabel, type: ButtonType.number, onTap: () => notifier.handleKeyPress('.')),
         KeypadButtonConfig(text: '=', type: ButtonType.equals, onTap: () => notifier.handleKeyPress('=')),
       ],
     ];
@@ -133,6 +139,7 @@ class CalculatorKeypad extends ConsumerWidget {
       children: layout.map((row) {
         return Expanded(
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch, // Force buttons to expand vertically
             children: row.map((btn) {
               return Expanded(
                 child: Padding(
@@ -278,7 +285,7 @@ class _CalculatorButtonState extends State<CalculatorButton> with SingleTickerPr
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: theme.shadowColor.withOpacity(0.04),
+                color: theme.shadowColor.withValues(alpha: 0.04),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),

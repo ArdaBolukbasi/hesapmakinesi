@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'providers/settings_provider.dart';
 import 'screens/calculator_screen.dart';
 
 void main() {
@@ -14,70 +15,76 @@ void main() {
   );
 }
 
-class CalculatorApp extends StatelessWidget {
+class CalculatorApp extends ConsumerWidget {
   const CalculatorApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // Custom premium color palettes using HSL-based Material 3 colors
-    final lightColorScheme = ColorScheme.fromSeed(
-      seedColor: const Color(0xFF0F62FE), // Sleek, modern tech blue
-      brightness: Brightness.light,
-      primary: const Color(0xFF0F62FE),
-      onPrimary: Colors.white,
-      primaryContainer: const Color(0xFFD0E1FF),
-      onPrimaryContainer: const Color(0xFF001C5A),
-      secondaryContainer: const Color(0xFFE2E2E9),
-      onSecondaryContainer: const Color(0xFF141A25),
-      surface: const Color(0xFFF4F6FC),
-      surfaceContainerHigh: const Color(0xFFEBEFF8),
-      surfaceContainerLowest: Colors.white,
-      onSurface: const Color(0xFF1A1C1E),
-      onSurfaceVariant: const Color(0xFF43474E),
-      errorContainer: const Color(0xFFFFDAD6),
-      onErrorContainer: const Color(0xFF410002),
-    );
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(settingsProvider);
 
-    final darkColorScheme = ColorScheme.fromSeed(
-      seedColor: const Color(0xFF78A9FF),
-      brightness: Brightness.dark,
-      primary: const Color(0xFF78A9FF),
-      onPrimary: const Color(0xFF002D89),
-      primaryContainer: const Color(0xFF0043C0),
-      onPrimaryContainer: const Color(0xFFD0E1FF),
-      secondaryContainer: const Color(0xFF2C303B),
-      onSecondaryContainer: const Color(0xFFE2E2E9),
-      surface: const Color(0xFF0B0D13),
-      surfaceContainerHigh: const Color(0xFF161A26),
-      surfaceContainerLowest: const Color(0xFF000000),
-      onSurface: const Color(0xFFE2E2E6),
-      onSurfaceVariant: const Color(0xFFC3C6CF),
-      errorContainer: const Color(0xFF93000A),
-      onErrorContainer: const Color(0xFFFFDAD6),
-    );
+    // Dynamic ThemeData based on the selected settings theme option
+    ThemeData getThemeData() {
+      ColorScheme colorScheme;
+      Color scaffoldColor;
+
+      switch (settings.theme) {
+        case 'light':
+          colorScheme = ColorScheme.fromSeed(
+            seedColor: const Color(0xFF0F62FE),
+            brightness: Brightness.light,
+            primary: const Color(0xFF0F62FE),
+            surface: const Color(0xFFF4F6FC),
+          );
+          scaffoldColor = const Color(0xFFF4F6FC);
+          break;
+        case 'green': // Mint theme
+          colorScheme = ColorScheme.fromSeed(
+            seedColor: const Color(0xFF00B074),
+            brightness: Brightness.dark,
+            primary: const Color(0xFF00B074),
+            surface: const Color(0xFF0C1410),
+            surfaceContainerHigh: const Color(0xFF13221A),
+          );
+          scaffoldColor = const Color(0xFF070B09);
+          break;
+        case 'red': // Ruby theme
+          colorScheme = ColorScheme.fromSeed(
+            seedColor: const Color(0xFFE53935),
+            brightness: Brightness.dark,
+            primary: const Color(0xFFE53935),
+            surface: const Color(0xFF160A0A),
+            surfaceContainerHigh: const Color(0xFF261212),
+          );
+          scaffoldColor = const Color(0xFF0C0505);
+          break;
+        case 'dark':
+        default:
+          colorScheme = ColorScheme.fromSeed(
+            seedColor: const Color(0xFF78A9FF),
+            brightness: Brightness.dark,
+            primary: const Color(0xFF78A9FF),
+            surface: const Color(0xFF0B0D13),
+            surfaceContainerHigh: const Color(0xFF161A26),
+          );
+          scaffoldColor = const Color(0xFF050608);
+      }
+
+      return ThemeData(
+        useMaterial3: true,
+        colorScheme: colorScheme,
+        scaffoldBackgroundColor: scaffoldColor,
+        textTheme: const TextTheme(
+          displayMedium: TextStyle(fontFamily: 'RobotoMono', letterSpacing: -1.0),
+          headlineSmall: TextStyle(fontFamily: 'RobotoMono', letterSpacing: -0.5),
+        ),
+      );
+    }
 
     return MaterialApp(
       title: 'Premium Dual Calculator',
       debugShowCheckedModeBanner: false,
-      themeMode: ThemeMode.system, // Elegant, automatic Light/Dark mode
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: lightColorScheme,
-        scaffoldBackgroundColor: lightColorScheme.surface,
-        textTheme: const TextTheme(
-          displayMedium: TextStyle(fontFamily: 'RobotoMono', letterSpacing: -1.0),
-          headlineSmall: TextStyle(fontFamily: 'RobotoMono', letterSpacing: -0.5),
-        ),
-      ),
-      darkTheme: ThemeData(
-        useMaterial3: true,
-        colorScheme: darkColorScheme,
-        scaffoldBackgroundColor: darkColorScheme.surface,
-        textTheme: const TextTheme(
-          displayMedium: TextStyle(fontFamily: 'RobotoMono', letterSpacing: -1.0),
-          headlineSmall: TextStyle(fontFamily: 'RobotoMono', letterSpacing: -0.5),
-        ),
-      ),
+      themeMode: ThemeMode.dark, // Force dynamic themes explicitly through getThemeData()
+      theme: getThemeData(),
       home: const CalculatorScreen(),
     );
   }

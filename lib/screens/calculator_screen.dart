@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/calculator_provider.dart';
+import '../providers/settings_provider.dart';
 import '../widgets/calculator_display.dart';
 import '../widgets/calculator_keypad.dart';
 import '../widgets/history_tape.dart';
@@ -55,6 +56,156 @@ class CalculatorScreen extends ConsumerWidget {
     );
   }
 
+  // Settings Drawer Widget
+  Widget _buildSettingsDrawer(BuildContext context, WidgetRef ref, ThemeData theme) {
+    final settings = ref.watch(settingsProvider);
+    final settingsNotifier = ref.read(settingsProvider.notifier);
+
+    final List<Map<String, dynamic>> themeOptions = [
+      {'id': 'light', 'name': 'Normal', 'color': const Color(0xFF0F62FE)},
+      {'id': 'dark', 'name': 'Dark', 'color': const Color(0xFF78A9FF)},
+      {'id': 'green', 'name': 'Green', 'color': const Color(0xFF00B074)},
+      {'id': 'red', 'name': 'Red', 'color': const Color(0xFFE53935)},
+    ];
+
+    return Drawer(
+      backgroundColor: theme.colorScheme.surface,
+      child: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Drawer Header
+            Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.settings_outlined,
+                    color: theme.colorScheme.primary,
+                    size: 28,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Ayarlar',
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+
+            // Theme Selection Section
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Tema Seçimi',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: themeOptions.map((opt) {
+                      final isSelected = settings.theme == opt['id'];
+                      return GestureDetector(
+                        onTap: () => settingsNotifier.setTheme(opt['id']),
+                        child: Column(
+                          children: [
+                            Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: opt['color'],
+                                shape: BoxShape.circle,
+                                border: isSelected
+                                    ? Border.all(
+                                        color: theme.colorScheme.onSurface,
+                                        width: 3,
+                                      )
+                                    : null,
+                                boxShadow: isSelected
+                                    ? [
+                                        BoxShadow(
+                                          color: opt['color'].withValues(alpha: 0.4),
+                                          blurRadius: 8,
+                                          spreadRadius: 2,
+                                        )
+                                      ]
+                                    : null,
+                              ),
+                              child: isSelected
+                                  ? const Icon(
+                                      Icons.check,
+                                      color: Colors.white,
+                                      size: 20,
+                                    )
+                                  : null,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              opt['name'],
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                fontWeight: isSelected ? FontWeight.bold : null,
+                                color: isSelected
+                                    ? theme.colorScheme.primary
+                                    : theme.colorScheme.onSurface,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+
+            // Decimal Separator Section
+            SwitchListTile(
+              secondary: Icon(Icons.pin_outlined, color: theme.colorScheme.primary),
+              title: const Text(
+                'Virgül Ondalık Ayracı',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: Text(
+                settings.useCommaDecimal
+                    ? 'Format: 1.500,50 TL (Option B)'
+                    : 'Format: 1,500.50 TL (Option A)',
+                style: const TextStyle(fontSize: 12),
+              ),
+              value: settings.useCommaDecimal,
+              onChanged: (val) {
+                settingsNotifier.setUseCommaDecimal(val);
+              },
+            ),
+            const Divider(height: 1),
+
+            const Spacer(),
+            Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Text(
+                'v1.2.0 • Premium Calculator',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final calcState = ref.watch(calculatorProvider);
@@ -65,15 +216,35 @@ class CalculatorScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
+      // 4. Drawer added for Settings
+      drawer: _buildSettingsDrawer(context, ref, theme),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
-        // 2. History Clock Icon in TOP-LEFT corner
-        leading: IconButton(
-          icon: const Icon(Icons.history),
-          tooltip: 'Hesaplama Geçmişi',
-          onPressed: () => _showHistorySheet(context, theme),
+        // 3. Hamburger icon alongside History clock icon in leading row
+        leadingWidth: 110,
+        leading: Builder(
+          builder: (context) {
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: const Icon(Icons.menu),
+                  tooltip: 'Ayarlar',
+                  onPressed: () {
+                    Scaffold.of(context).openDrawer();
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.history),
+                  tooltip: 'Hesaplama Geçmişi',
+                  onPressed: () => _showHistorySheet(context, theme),
+                ),
+              ],
+            );
+          },
         ),
         title: Text(
           modeTitle,
@@ -84,6 +255,7 @@ class CalculatorScreen extends ConsumerWidget {
         ),
         centerTitle: true,
         actions: [
+          // KDV Hesaplayıcıyı Açan Fatura İkonu
           IconButton(
             icon: const Icon(Icons.receipt_long),
             tooltip: 'KDV Hesaplama',
@@ -96,7 +268,7 @@ class CalculatorScreen extends ConsumerWidget {
               );
             },
           ),
-          // 3. Calculator Mode Selection Icon in TOP-RIGHT corner
+          // Mod Seçim Menüsü
           PopupMenuButton<bool>(
             icon: const Icon(Icons.calculate_outlined),
             tooltip: 'Mod Seçimi',
@@ -149,10 +321,8 @@ class CalculatorScreen extends ConsumerWidget {
           padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 16.0),
           child: Column(
             children: [
-              // Display scales automatically based on orientation
               const CalculatorDisplay(),
               const SizedBox(height: 12),
-              // Keypad expands to fill the remaining area dynamically
               const Expanded(
                 child: CalculatorKeypad(),
               ),

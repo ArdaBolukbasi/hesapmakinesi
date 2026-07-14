@@ -1,15 +1,18 @@
 // File: lib/screens/vat_calculator_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class VatCalculatorScreen extends StatefulWidget {
+import '../providers/settings_provider.dart';
+
+class VatCalculatorScreen extends ConsumerStatefulWidget {
   const VatCalculatorScreen({super.key});
 
   @override
-  State<VatCalculatorScreen> createState() => _VatCalculatorScreenState();
+  ConsumerState<VatCalculatorScreen> createState() => _VatCalculatorScreenState();
 }
 
-class _VatCalculatorScreenState extends State<VatCalculatorScreen> {
+class _VatCalculatorScreenState extends ConsumerState<VatCalculatorScreen> {
   final TextEditingController _amountController = TextEditingController(text: '1000');
   final TextEditingController _rateController = TextEditingController(text: '20');
 
@@ -30,14 +33,22 @@ class _VatCalculatorScreenState extends State<VatCalculatorScreen> {
   }
 
   void _calculate() {
-    final cleanAmount = _amountController.text.replaceAll(',', '');
+    // Standardize input parsing (replace decimal comma with dot for calculation)
+    String cleanAmount = _amountController.text.replaceAll('.', '').replaceAll(',', '.');
+    // If the input has multiple dots/commas, try to clean it
+    final RegExp regExp = RegExp(r'[^0-9.]');
+    cleanAmount = cleanAmount.replaceAll(regExp, '');
+
+    String cleanRate = _rateController.text.replaceAll(',', '.');
+    cleanRate = cleanRate.replaceAll(regExp, '');
+
     setState(() {
       _amount = double.tryParse(cleanAmount) ?? 0.0;
-      _vatRate = double.tryParse(_rateController.text) ?? 0.0;
+      _vatRate = double.tryParse(cleanRate) ?? 0.0;
     });
   }
 
-  String _formatCurrency(double value) {
+  String _formatCurrency(double value, bool useComma) {
     if (value.isNaN || value.isInfinite) return "0.00";
     
     // Split integer and decimal parts
@@ -51,16 +62,27 @@ class _VatCalculatorScreenState extends State<VatCalculatorScreen> {
       integerPart = integerPart.substring(1);
     }
 
-    // Add thousands separators
+    // Add thousands separators (comma-based standard first)
     final RegExp reg = RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))');
     integerPart = integerPart.replaceAllMapped(reg, (Match m) => '${m[1]},');
 
-    return '${isNegative ? '-' : ''}$integerPart.$decimalPart';
+    String formatted = '${isNegative ? '-' : ''}$integerPart.$decimalPart';
+    
+    // Localization conversion
+    if (useComma) {
+      formatted = formatted
+          .replaceAll(',', 'PLACEHOLDER')
+          .replaceAll('.', ',')
+          .replaceAll('PLACEHOLDER', '.');
+    }
+
+    return formatted;
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final useComma = ref.watch(settingsProvider).useCommaDecimal;
 
     // KDV HARIÇ Calculations (Adding KDV to Base Amount)
     final double addedVatAmount = _amount * (_vatRate / 100);
@@ -120,24 +142,18 @@ class _VatCalculatorScreenState extends State<VatCalculatorScreen> {
                       const SizedBox(height: 16),
 
                       // VAT Rate Input (KDV Oranı)
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: _rateController,
-                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                              decoration: InputDecoration(
-                                labelText: 'KDV Oranı (%)',
-                                hintText: 'KDV oranını girin',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                prefixIcon: const Icon(Icons.percent),
-                              ),
-                              onChanged: (val) => _calculate(),
-                            ),
+                      TextField(
+                        controller: _rateController,
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        decoration: InputDecoration(
+                          labelText: 'KDV Oranı (%)',
+                          hintText: 'KDV oranını girin',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                        ],
+                          prefixIcon: const Icon(Icons.percent),
+                        ),
+                        onChanged: (val) => _calculate(),
                       ),
                       const SizedBox(height: 12),
 
@@ -212,13 +228,13 @@ class _VatCalculatorScreenState extends State<VatCalculatorScreen> {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      _buildRowResult('KDV\'siz Tutar', _formatCurrency(_amount), theme),
+                      _buildRowResult('KDV\'siz Tutar', _formatCurrency(_amount, useComma), theme),
                       const Divider(height: 16),
-                      _buildRowResult('KDV Tutarı (%${_vatRate.toStringAsFixed(0)})', _formatCurrency(addedVatAmount), theme),
+                      _buildRowResult('KDV Tutarı (%${_vatRate.toStringAsFixed(0)})', _formatCurrency(addedVatAmount, useComma), theme),
                       const Divider(height: 16),
                       _buildRowResult(
                         'Toplam Tutar (KDV Dahil)',
-                        _formatCurrency(addedTotalAmount),
+                        _formatCurrency(addedTotalAmount, useComma),
                         theme,
                         isTotal: true,
                         valueColor: theme.colorScheme.primary,
@@ -261,13 +277,13 @@ class _VatCalculatorScreenState extends State<VatCalculatorScreen> {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      _buildRowResult('KDV\'siz Tutar (Net)', _formatCurrency(extractedBaseAmount), theme),
+                      _buildRowResult('KDV\'siz Tutar (Net)', _formatCurrency(extractedBaseAmount, useComma), theme),
                       const Divider(height: 16),
-                      _buildRowResult('KDV Tutarı (%${_vatRate.toStringAsFixed(0)})', _formatCurrency(extractedVatAmount), theme),
+                      _buildRowResult('KDV Tutarı (%${_vatRate.toStringAsFixed(0)})', _formatCurrency(extractedVatAmount, useComma), theme),
                       const Divider(height: 16),
                       _buildRowResult(
                         'Toplam Tutar',
-                        _formatCurrency(_amount),
+                        _formatCurrency(_amount, useComma),
                         theme,
                         isTotal: true,
                         valueColor: theme.colorScheme.secondary,
@@ -287,20 +303,31 @@ class _VatCalculatorScreenState extends State<VatCalculatorScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontWeight: isTotal ? FontWeight.bold : FontWeight.w500,
-            fontSize: isTotal ? 15 : 14,
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+        Expanded(
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontWeight: isTotal ? FontWeight.bold : FontWeight.w500,
+              fontSize: isTotal ? 15 : 14,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+            ),
           ),
         ),
-        Text(
-          '$value TL',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: isTotal ? 17 : 15,
-            color: valueColor ?? theme.colorScheme.onSurface,
+        const SizedBox(width: 8),
+        Flexible(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              '$value TL',
+              maxLines: 1,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: isTotal ? 17 : 15,
+                color: valueColor ?? theme.colorScheme.onSurface,
+              ),
+            ),
           ),
         ),
       ],
