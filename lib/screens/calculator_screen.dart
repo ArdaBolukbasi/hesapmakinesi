@@ -7,6 +7,7 @@ import '../providers/calculator_provider.dart';
 import '../widgets/calculator_display.dart';
 import '../widgets/calculator_keypad.dart';
 import '../widgets/history_tape.dart';
+import 'vat_calculator_screen.dart';
 
 class CalculatorScreen extends ConsumerWidget {
   const CalculatorScreen({super.key});
@@ -83,6 +84,18 @@ class CalculatorScreen extends ConsumerWidget {
         ),
         centerTitle: true,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.receipt_long),
+            tooltip: 'KDV Hesaplama',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const VatCalculatorScreen(),
+                ),
+              );
+            },
+          ),
           // 3. Calculator Mode Selection Icon in TOP-RIGHT corner
           PopupMenuButton<bool>(
             icon: const Icon(Icons.calculate_outlined),
