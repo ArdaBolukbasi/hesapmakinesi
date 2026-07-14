@@ -24,7 +24,7 @@ class CalculatorKeypad extends ConsumerWidget {
   }
 
   Widget _buildAccountingKeypad(BuildContext context, WidgetRef ref, ThemeData theme) {
-    // 4 columns x 5 rows grid
+    // 4 columns x 5 rows grid (Accounting mode rows remain completely identical in height)
     final notifier = ref.read(calculatorProvider.notifier);
 
     final List<List<KeypadButtonConfig>> layout = [
@@ -134,10 +134,16 @@ class CalculatorKeypad extends ConsumerWidget {
     ];
 
     return Column(
-      children: layout.map((row) {
+      children: List.generate(layout.length, (index) {
+        final row = layout[index];
+        // Ergonomic adjustment: assign flex 2 to scientific function/constant rows, 
+        // and flex 3 to numeric/basic operator rows.
+        final int flex = index < 3 ? 2 : 3;
+
         return Expanded(
+          flex: flex,
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch, // Force buttons to expand vertically
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: row.map((btn) {
               return Expanded(
                 child: Padding(
@@ -152,7 +158,7 @@ class CalculatorKeypad extends ConsumerWidget {
             }).toList(),
           ),
         );
-      }).toList(),
+      }),
     );
   }
 }
