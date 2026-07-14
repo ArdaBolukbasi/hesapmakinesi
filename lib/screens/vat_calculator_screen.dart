@@ -283,14 +283,17 @@ class _VatCalculatorScreenState extends ConsumerState<VatCalculatorScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Expanded(
-          child: Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontWeight: isTotal ? FontWeight.bold : FontWeight.w500,
-              fontSize: isTotal ? 15 : 14,
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              label,
+              maxLines: 1,
+              style: TextStyle(
+                fontWeight: isTotal ? FontWeight.bold : FontWeight.w500,
+                fontSize: isTotal ? 15 : 14,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+              ),
             ),
           ),
         ),

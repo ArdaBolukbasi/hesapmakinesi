@@ -51,6 +51,7 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
   bool _isPercentCalculated = false;
   double? _lastPercentResult;
   double? _lastPercentBase;
+  bool _isPercentageFinalized = false;
 
   final _uuid = const Uuid();
 
@@ -172,6 +173,7 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
     _isPercentCalculated = false;
     _lastPercentResult = null;
     _lastPercentBase = null;
+    _isPercentageFinalized = false;
   }
 
   // Clear or Backspace keys
@@ -193,6 +195,7 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
   }
 
   void handleBackspace() {
+    _isPercentageFinalized = false;
     if (state.isScientific) {
       String formula = state.formulaValue;
       if (formula.isNotEmpty) {
@@ -250,6 +253,7 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
 
     // Check if key is a digit or decimal point
     if (RegExp(r'[0-9.]').hasMatch(key)) {
+      _isPercentageFinalized = false;
       if (state.shouldResetDisplay || _isPercentCalculated) {
         state = state.copyWith(
           displayValue: key == '.' ? '0.' : key,
@@ -286,6 +290,7 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
 
     // Check if key is an operator
     if (key == '+' || key == '-' || key == '×' || key == '÷') {
+      _isPercentageFinalized = false;
       final String mappedOperator = key == '×' ? '*' : (key == '÷' ? '/' : key);
 
       // Case A: Just calculated percentage (e.g. 1500 * 20 % -> displays 300)
@@ -304,6 +309,7 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
           _resetAccountingState();
           _operandA = res;
           _operator = mappedOperator;
+          _isPercentageFinalized = true;
 
           state = state.copyWith(
             displayValue: finalDisplay,
@@ -394,6 +400,7 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
 
           _resetAccountingState();
           _operandA = res;
+          _isPercentageFinalized = true;
 
           state = state.copyWith(
             displayValue: finalDisplay,
@@ -407,6 +414,9 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
 
     // Check if key is Equals (=)
     if (key == '=') {
+      if (_isPercentageFinalized) {
+        return;
+      }
       if (_isPercentCalculated && _lastPercentBase != null && _lastPercentResult != null) {
         final String finalFormula = '${_formatResult(_lastPercentBase!)} ${_operator ?? "*"} ${_formatResult(_lastPercentResult! / _lastPercentBase! * 100)}%';
         _addToHistory(finalFormula, state.displayValue);
