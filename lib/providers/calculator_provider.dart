@@ -1,6 +1,5 @@
 // File: lib/providers/calculator_provider.dart
 
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:math_expressions/math_expressions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -8,7 +7,6 @@ import 'package:uuid/uuid.dart';
 
 import '../models/history_item.dart';
 import '../utils/number_formatter.dart';
-import 'settings_provider.dart';
 
 class CalculatorState {
   final bool isScientific;
@@ -64,20 +62,6 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
     return NumberFormatter.formatResult(result);
   }
 
-  void _triggerFeedback(bool isMedium) {
-    final settings = ref.read(settingsProvider);
-    if (settings.enableVibration) {
-      if (isMedium) {
-        HapticFeedback.mediumImpact();
-      } else {
-        HapticFeedback.lightImpact();
-      }
-    }
-    if (settings.enableSound) {
-      SystemSound.play(SystemSoundType.click);
-    }
-  }
-
   @override
   CalculatorState build() {
     _resetAccountingState();
@@ -131,11 +115,9 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
   void clearHistory() {
     state = state.copyWith(history: []);
     _saveHistoryList([]);
-    _triggerFeedback(true);
   }
 
   void restoreHistoryItem(HistoryItem item) {
-    _triggerFeedback(true);
     if (state.isScientific) {
       String current = state.formulaValue;
       if (state.shouldResetDisplay || current == '0' || current.isEmpty) {
@@ -172,7 +154,6 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
       shouldResetDisplay: false,
     );
     _resetAccountingState();
-    _triggerFeedback(true);
   }
 
   void setMode(bool isScientific) {
@@ -183,7 +164,6 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
 
   void toggleDegRad() {
     state = state.copyWith(isDegMode: !state.isDegMode);
-    _triggerFeedback(false);
   }
 
   void _resetAccountingState() {
@@ -196,7 +176,6 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
 
   // Clear or Backspace keys
   void handleClear() {
-    _triggerFeedback(true);
     if (state.isScientific) {
       state = state.copyWith(
         displayValue: '0',
@@ -214,7 +193,6 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
   }
 
   void handleBackspace() {
-    _triggerFeedback(false);
     if (state.isScientific) {
       String formula = state.formulaValue;
       if (formula.isNotEmpty) {
@@ -269,7 +247,6 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
   // ACCOUNTING MODE ENGINE
   // -------------------------------------------------------------
   void _handleAccountingKeyPress(String key) {
-    _triggerFeedback(false);
 
     // Check if key is a digit or decimal point
     if (RegExp(r'[0-9.]').hasMatch(key)) {
@@ -488,7 +465,6 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
   // SCIENTIFIC MODE ENGINE
   // -------------------------------------------------------------
   void _handleScientificKeyPress(String key) {
-    _triggerFeedback(false);
 
     if (key == '=') {
       _evaluateScientific();

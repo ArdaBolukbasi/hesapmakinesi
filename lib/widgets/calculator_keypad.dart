@@ -1,9 +1,11 @@
 // File: lib/widgets/calculator_keypad.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/calculator_provider.dart';
+import '../providers/settings_provider.dart';
 
 class CalculatorKeypad extends ConsumerWidget {
   const CalculatorKeypad({super.key});
@@ -168,7 +170,7 @@ class KeypadButtonConfig {
   });
 }
 
-class CalculatorButton extends StatefulWidget {
+class CalculatorButton extends ConsumerStatefulWidget {
   final String text;
   final VoidCallback onTap;
   final ButtonType type;
@@ -181,10 +183,10 @@ class CalculatorButton extends StatefulWidget {
   });
 
   @override
-  State<CalculatorButton> createState() => _CalculatorButtonState();
+  ConsumerState<CalculatorButton> createState() => _CalculatorButtonState();
 }
 
-class _CalculatorButtonState extends State<CalculatorButton> with SingleTickerProviderStateMixin {
+class _CalculatorButtonState extends ConsumerState<CalculatorButton> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
 
@@ -216,6 +218,17 @@ class _CalculatorButtonState extends State<CalculatorButton> with SingleTickerPr
 
   void _handleTapCancel() {
     _controller.reverse();
+  }
+
+  void _triggerFeedbackAndTap() {
+    final settings = ref.read(settingsProvider);
+    if (settings.enableVibration) {
+      HapticFeedback.lightImpact();
+    }
+    if (settings.enableSound) {
+      SystemSound.play(SystemSoundType.click);
+    }
+    widget.onTap();
   }
 
   @override
@@ -271,7 +284,7 @@ class _CalculatorButtonState extends State<CalculatorButton> with SingleTickerPr
       onTapDown: _handleTapDown,
       onTapUp: _handleTapUp,
       onTapCancel: _handleTapCancel,
-      onTap: widget.onTap,
+      onTap: _triggerFeedbackAndTap, // Trigger sound & vibration before tap callback
       child: ScaleTransition(
         scale: _scaleAnimation,
         child: Container(
