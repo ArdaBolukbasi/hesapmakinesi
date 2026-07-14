@@ -503,6 +503,12 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
       currentFormula += '×';
     } else if (key == '÷') {
       currentFormula += '÷';
+    } else if (key == '+/-') {
+      if (currentFormula.endsWith('-')) {
+        currentFormula = currentFormula.substring(0, currentFormula.length - 1);
+      } else {
+        currentFormula += '-';
+      }
     } else {
       currentFormula += key;
     }

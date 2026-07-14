@@ -24,7 +24,7 @@ class CalculatorKeypad extends ConsumerWidget {
   }
 
   Widget _buildAccountingKeypad(BuildContext context, WidgetRef ref, ThemeData theme) {
-    // 4 columns x 5 rows grid (Accounting mode rows remain completely identical in height)
+    // 4 columns x 5 rows grid (Accounting mode layout remains completely identical in layout and height)
     final notifier = ref.read(calculatorProvider.notifier);
 
     final List<List<KeypadButtonConfig>> layout = [
@@ -64,7 +64,7 @@ class CalculatorKeypad extends ConsumerWidget {
       children: layout.map((row) {
         return Expanded(
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch, // Force buttons to expand vertically
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: row.map((btn) {
               return Expanded(
                 child: Padding(
@@ -84,10 +84,11 @@ class CalculatorKeypad extends ConsumerWidget {
   }
 
   Widget _buildScientificKeypad(BuildContext context, WidgetRef ref, ThemeData theme) {
-    // 5 columns x 6 rows grid
+    // 5 columns x 7 rows grid (Completely redesigned for scientific mode)
     final notifier = ref.read(calculatorProvider.notifier);
 
     final List<List<KeypadButtonConfig>> layout = [
+      // Row 1
       [
         KeypadButtonConfig(text: 'sin', type: ButtonType.function, onTap: () => notifier.handleKeyPress('sin')),
         KeypadButtonConfig(text: 'cos', type: ButtonType.function, onTap: () => notifier.handleKeyPress('cos')),
@@ -95,39 +96,49 @@ class CalculatorKeypad extends ConsumerWidget {
         KeypadButtonConfig(text: 'log', type: ButtonType.function, onTap: () => notifier.handleKeyPress('log')),
         KeypadButtonConfig(text: 'ln', type: ButtonType.function, onTap: () => notifier.handleKeyPress('ln')),
       ],
+      // Row 2
       [
         KeypadButtonConfig(text: 'sqrt', type: ButtonType.function, onTap: () => notifier.handleKeyPress('sqrt')),
-        KeypadButtonConfig(text: '(', type: ButtonType.function, onTap: () => notifier.handleKeyPress('(')),
-        KeypadButtonConfig(text: ')', type: ButtonType.function, onTap: () => notifier.handleKeyPress(')')),
-        KeypadButtonConfig(text: 'xy', type: ButtonType.function, onTap: () => notifier.handleKeyPress('xy')),
         KeypadButtonConfig(text: 'x²', type: ButtonType.function, onTap: () => notifier.handleKeyPress('x²')),
-      ],
-      [
+        KeypadButtonConfig(text: 'xy', type: ButtonType.function, onTap: () => notifier.handleKeyPress('xy')),
         KeypadButtonConfig(text: 'π', type: ButtonType.function, onTap: () => notifier.handleKeyPress('π')),
         KeypadButtonConfig(text: 'e', type: ButtonType.function, onTap: () => notifier.handleKeyPress('e')),
+      ],
+      // Row 3
+      [
+        KeypadButtonConfig(text: '(', type: ButtonType.function, onTap: () => notifier.handleKeyPress('(')),
+        KeypadButtonConfig(text: ')', type: ButtonType.function, onTap: () => notifier.handleKeyPress(')')),
         KeypadButtonConfig(text: '%', type: ButtonType.operator, onTap: () => notifier.handleKeyPress('%')),
-        KeypadButtonConfig(text: '⌫', type: ButtonType.action, onTap: () => notifier.handleBackspace()),
+        KeypadButtonConfig(text: '+/-', type: ButtonType.function, onTap: () => notifier.handleKeyPress('+/-')),
         KeypadButtonConfig(text: 'AC', type: ButtonType.action, onTap: () => notifier.handleClear()),
       ],
+      // Row 4
       [
         KeypadButtonConfig(text: '7', type: ButtonType.number, onTap: () => notifier.handleKeyPress('7')),
         KeypadButtonConfig(text: '8', type: ButtonType.number, onTap: () => notifier.handleKeyPress('8')),
         KeypadButtonConfig(text: '9', type: ButtonType.number, onTap: () => notifier.handleKeyPress('9')),
+        KeypadButtonConfig(text: '⌫', type: ButtonType.action, onTap: () => notifier.handleBackspace()),
         KeypadButtonConfig(text: '÷', type: ButtonType.operator, onTap: () => notifier.handleKeyPress('÷')),
-        KeypadButtonConfig(text: '×', type: ButtonType.operator, onTap: () => notifier.handleKeyPress('×')),
       ],
+      // Row 5
       [
         KeypadButtonConfig(text: '4', type: ButtonType.number, onTap: () => notifier.handleKeyPress('4')),
         KeypadButtonConfig(text: '5', type: ButtonType.number, onTap: () => notifier.handleKeyPress('5')),
         KeypadButtonConfig(text: '6', type: ButtonType.number, onTap: () => notifier.handleKeyPress('6')),
+        KeypadButtonConfig(text: '×', type: ButtonType.operator, onTap: () => notifier.handleKeyPress('×')),
         KeypadButtonConfig(text: '-', type: ButtonType.operator, onTap: () => notifier.handleKeyPress('-')),
-        KeypadButtonConfig(text: '+', type: ButtonType.operator, onTap: () => notifier.handleKeyPress('+')),
       ],
+      // Row 6
       [
         KeypadButtonConfig(text: '1', type: ButtonType.number, onTap: () => notifier.handleKeyPress('1')),
         KeypadButtonConfig(text: '2', type: ButtonType.number, onTap: () => notifier.handleKeyPress('2')),
         KeypadButtonConfig(text: '3', type: ButtonType.number, onTap: () => notifier.handleKeyPress('3')),
         KeypadButtonConfig(text: '0', type: ButtonType.number, onTap: () => notifier.handleKeyPress('0')),
+        KeypadButtonConfig(text: '+', type: ButtonType.operator, onTap: () => notifier.handleKeyPress('+')),
+      ],
+      // Row 7 (Ergonomic layout: 00, ., and Equals stretching across the remaining 3 columns)
+      [
+        KeypadButtonConfig(text: '00', type: ButtonType.number, onTap: () => notifier.handleKeyPress('00')),
         KeypadButtonConfig(text: '.', type: ButtonType.number, onTap: () => notifier.handleKeyPress('.')),
         KeypadButtonConfig(text: '=', type: ButtonType.equals, onTap: () => notifier.handleKeyPress('=')),
       ],
@@ -136,8 +147,7 @@ class CalculatorKeypad extends ConsumerWidget {
     return Column(
       children: List.generate(layout.length, (index) {
         final row = layout[index];
-        // Ergonomic adjustment: assign flex 2 to scientific function/constant rows, 
-        // and flex 3 to numeric/basic operator rows.
+        // Ergonomic heights: top 3 scientific rows are flex 2, bottom 4 numeric/operator rows are flex 3
         final int flex = index < 3 ? 2 : 3;
 
         return Expanded(
@@ -145,7 +155,10 @@ class CalculatorKeypad extends ConsumerWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: row.map((btn) {
+              // Custom flex width for the Equals key in the last row to make it fill the 5-column space cleanly
+              final int colFlex = (index == 6 && btn.text == '=') ? 3 : 1;
               return Expanded(
+                flex: colFlex,
                 child: Padding(
                   padding: const EdgeInsets.all(4.0),
                   child: CalculatorButton(
@@ -257,9 +270,15 @@ class _CalculatorButtonState extends ConsumerState<CalculatorButton> with Single
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final settings = ref.watch(settingsProvider);
+    final isRetroGold = settings.theme == 'retro_gold';
 
     // Dynamic colors based on button type
     Color getBgColor() {
+      if (isRetroGold) {
+        return const Color(0xFF383542); // Retro dark purple-grey
+      }
+
       switch (widget.type) {
         case ButtonType.number:
           return theme.colorScheme.surfaceContainerHigh;
@@ -275,6 +294,14 @@ class _CalculatorButtonState extends ConsumerState<CalculatorButton> with Single
     }
 
     Color getTextColor() {
+      if (isRetroGold) {
+        // AC, +/- and all scientific functions are orange/gold
+        final isFunctionOrAcOrNegate = widget.text == 'AC' ||
+            widget.text == '+/-' ||
+            widget.type == ButtonType.function;
+        return isFunctionOrAcOrNegate ? const Color(0xFFF0A352) : Colors.white;
+      }
+
       switch (widget.type) {
         case ButtonType.number:
           return theme.colorScheme.onSurface;

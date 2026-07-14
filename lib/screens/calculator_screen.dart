@@ -66,6 +66,7 @@ class CalculatorScreen extends ConsumerWidget {
       {'id': 'dark', 'name': 'Dark', 'color': const Color(0xFF78A9FF)},
       {'id': 'green', 'name': 'Green', 'color': const Color(0xFF00B074)},
       {'id': 'red', 'name': 'Red', 'color': const Color(0xFFE53935)},
+      {'id': 'retro_gold', 'name': 'Retro', 'color': const Color(0xFFF0A352)},
     ];
 
     return Drawer(
@@ -111,8 +112,10 @@ class CalculatorScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    alignment: WrapAlignment.start,
                     children: themeOptions.map((opt) {
                       final isSelected = settings.theme == opt['id'];
                       return GestureDetector(
@@ -120,8 +123,8 @@ class CalculatorScreen extends ConsumerWidget {
                         child: Column(
                           children: [
                             Container(
-                              width: 48,
-                              height: 48,
+                              width: 44,
+                              height: 44,
                               decoration: BoxDecoration(
                                 color: opt['color'],
                                 shape: BoxShape.circle,
@@ -145,7 +148,7 @@ class CalculatorScreen extends ConsumerWidget {
                                   ? const Icon(
                                       Icons.check,
                                       color: Colors.white,
-                                      size: 20,
+                                      size: 18,
                                     )
                                   : null,
                             ),
