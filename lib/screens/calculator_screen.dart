@@ -229,9 +229,11 @@ class CalculatorScreen extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.all(24.0),
               child: Text(
-                'v1.3.0 • Premium Calculator',
+                'Made by Arda Bölükbaşı',
                 style: theme.textTheme.labelSmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                  fontStyle: FontStyle.italic,
+                  letterSpacing: 0.8,
                 ),
                 textAlign: TextAlign.center,
               ),

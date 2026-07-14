@@ -198,7 +198,7 @@ class _VatCalculatorScreenState extends ConsumerState<VatCalculatorScreen> {
                           Icon(Icons.add_circle_outline, color: theme.colorScheme.primary),
                           const SizedBox(width: 8),
                           Text(
-                            'KDV HARİÇ (KDV Eklenecek)',
+                            'KDV HARİÇ',
                             style: theme.textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: theme.colorScheme.primary,
@@ -247,7 +247,7 @@ class _VatCalculatorScreenState extends ConsumerState<VatCalculatorScreen> {
                           Icon(Icons.remove_circle_outline, color: theme.colorScheme.secondary),
                           const SizedBox(width: 8),
                           Text(
-                            'KDV DAHİL (KDV Ayıklanacak)',
+                            'KDV DAHİL',
                             style: theme.textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: theme.colorScheme.secondary,
