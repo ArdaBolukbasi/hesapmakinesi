@@ -3,8 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../providers/settings_provider.dart';
-
 class VatCalculatorScreen extends ConsumerStatefulWidget {
   const VatCalculatorScreen({super.key});
 
@@ -13,17 +11,11 @@ class VatCalculatorScreen extends ConsumerStatefulWidget {
 }
 
 class _VatCalculatorScreenState extends ConsumerState<VatCalculatorScreen> {
-  final TextEditingController _amountController = TextEditingController(text: '1000');
-  final TextEditingController _rateController = TextEditingController(text: '20');
+  final TextEditingController _amountController = TextEditingController();
+  final TextEditingController _rateController = TextEditingController();
 
-  double _amount = 1000.0;
-  double _vatRate = 20.0;
-
-  @override
-  void initState() {
-    super.initState();
-    _calculate();
-  }
+  double _amount = 0.0;
+  double _vatRate = 0.0;
 
   @override
   void dispose() {
@@ -33,9 +25,7 @@ class _VatCalculatorScreenState extends ConsumerState<VatCalculatorScreen> {
   }
 
   void _calculate() {
-    // Standardize input parsing (replace decimal comma with dot for calculation)
     String cleanAmount = _amountController.text.replaceAll('.', '').replaceAll(',', '.');
-    // If the input has multiple dots/commas, try to clean it
     final RegExp regExp = RegExp(r'[^0-9.]');
     cleanAmount = cleanAmount.replaceAll(regExp, '');
 
@@ -48,7 +38,7 @@ class _VatCalculatorScreenState extends ConsumerState<VatCalculatorScreen> {
     });
   }
 
-  String _formatCurrency(double value, bool useComma) {
+  String _formatCurrency(double value) {
     if (value.isNaN || value.isInfinite) return "0.00";
     
     // Split integer and decimal parts
@@ -62,27 +52,16 @@ class _VatCalculatorScreenState extends ConsumerState<VatCalculatorScreen> {
       integerPart = integerPart.substring(1);
     }
 
-    // Add thousands separators (comma-based standard first)
+    // Standard notation: Dot decimal, Comma thousands
     final RegExp reg = RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))');
     integerPart = integerPart.replaceAllMapped(reg, (Match m) => '${m[1]},');
 
-    String formatted = '${isNegative ? '-' : ''}$integerPart.$decimalPart';
-    
-    // Localization conversion
-    if (useComma) {
-      formatted = formatted
-          .replaceAll(',', 'PLACEHOLDER')
-          .replaceAll('.', ',')
-          .replaceAll('PLACEHOLDER', '.');
-    }
-
-    return formatted;
+    return '${isNegative ? '-' : ''}$integerPart.$decimalPart';
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final useComma = ref.watch(settingsProvider).useCommaDecimal;
 
     // KDV HARIÇ Calculations (Adding KDV to Base Amount)
     final double addedVatAmount = _amount * (_vatRate / 100);
@@ -131,7 +110,7 @@ class _VatCalculatorScreenState extends ConsumerState<VatCalculatorScreen> {
                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
                         decoration: InputDecoration(
                           labelText: 'Tutar (TL)',
-                          hintText: 'Hesaplanacak tutarı girin',
+                          hintText: 'Tutar girin',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -147,7 +126,7 @@ class _VatCalculatorScreenState extends ConsumerState<VatCalculatorScreen> {
                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
                         decoration: InputDecoration(
                           labelText: 'KDV Oranı (%)',
-                          hintText: 'KDV oranını girin',
+                          hintText: 'Oran girin',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -228,13 +207,13 @@ class _VatCalculatorScreenState extends ConsumerState<VatCalculatorScreen> {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      _buildRowResult('KDV\'siz Tutar', _formatCurrency(_amount, useComma), theme),
+                      _buildRowResult('KDV\'siz Tutar', _formatCurrency(_amount), theme),
                       const Divider(height: 16),
-                      _buildRowResult('KDV Tutarı (%${_vatRate.toStringAsFixed(0)})', _formatCurrency(addedVatAmount, useComma), theme),
+                      _buildRowResult('KDV Tutarı (%${_vatRate.toStringAsFixed(0)})', _formatCurrency(addedVatAmount), theme),
                       const Divider(height: 16),
                       _buildRowResult(
                         'Toplam Tutar (KDV Dahil)',
-                        _formatCurrency(addedTotalAmount, useComma),
+                        _formatCurrency(addedTotalAmount),
                         theme,
                         isTotal: true,
                         valueColor: theme.colorScheme.primary,
@@ -277,13 +256,13 @@ class _VatCalculatorScreenState extends ConsumerState<VatCalculatorScreen> {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      _buildRowResult('KDV\'siz Tutar (Net)', _formatCurrency(extractedBaseAmount, useComma), theme),
+                      _buildRowResult('KDV\'siz Tutar (Net)', _formatCurrency(extractedBaseAmount), theme),
                       const Divider(height: 16),
-                      _buildRowResult('KDV Tutarı (%${_vatRate.toStringAsFixed(0)})', _formatCurrency(extractedVatAmount, useComma), theme),
+                      _buildRowResult('KDV Tutarı (%${_vatRate.toStringAsFixed(0)})', _formatCurrency(extractedVatAmount), theme),
                       const Divider(height: 16),
                       _buildRowResult(
                         'Toplam Tutar',
-                        _formatCurrency(_amount, useComma),
+                        _formatCurrency(_amount),
                         theme,
                         isTotal: true,
                         valueColor: theme.colorScheme.secondary,

@@ -169,22 +169,38 @@ class CalculatorScreen extends ConsumerWidget {
             ),
             const Divider(height: 1),
 
-            // Decimal Separator Section
+            // Vibration Toggle
             SwitchListTile(
-              secondary: Icon(Icons.pin_outlined, color: theme.colorScheme.primary),
+              secondary: Icon(Icons.vibration_outlined, color: theme.colorScheme.primary),
               title: const Text(
-                'Virgül Ondalık Ayracı',
+                'Titreşim',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
-              subtitle: Text(
-                settings.useCommaDecimal
-                    ? 'Format: 1.500,50 TL (Option B)'
-                    : 'Format: 1,500.50 TL (Option A)',
-                style: const TextStyle(fontSize: 12),
+              subtitle: const Text(
+                'Tuş basışlarında titreşim geribildirimi',
+                style: TextStyle(fontSize: 12),
               ),
-              value: settings.useCommaDecimal,
+              value: settings.enableVibration,
               onChanged: (val) {
-                settingsNotifier.setUseCommaDecimal(val);
+                settingsNotifier.setVibration(val);
+              },
+            ),
+            const Divider(height: 1),
+
+            // Sound Toggle
+            SwitchListTile(
+              secondary: Icon(Icons.volume_up_outlined, color: theme.colorScheme.primary),
+              title: const Text(
+                'Ses Efekti',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: const Text(
+                'Tuş basışlarında klik sesi',
+                style: TextStyle(fontSize: 12),
+              ),
+              value: settings.enableSound,
+              onChanged: (val) {
+                settingsNotifier.setSound(val);
               },
             ),
             const Divider(height: 1),

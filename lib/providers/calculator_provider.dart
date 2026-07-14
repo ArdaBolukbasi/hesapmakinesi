@@ -57,13 +57,25 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
   final _uuid = const Uuid();
 
   String _format(String value) {
-    final useComma = ref.read(settingsProvider).useCommaDecimal;
-    return NumberFormatter.format(value, useCommaDecimal: useComma);
+    return NumberFormatter.format(value);
   }
 
   String _formatResult(double result) {
-    final useComma = ref.read(settingsProvider).useCommaDecimal;
-    return NumberFormatter.formatResult(result, useCommaDecimal: useComma);
+    return NumberFormatter.formatResult(result);
+  }
+
+  void _triggerFeedback(bool isMedium) {
+    final settings = ref.read(settingsProvider);
+    if (settings.enableVibration) {
+      if (isMedium) {
+        HapticFeedback.mediumImpact();
+      } else {
+        HapticFeedback.lightImpact();
+      }
+    }
+    if (settings.enableSound) {
+      SystemSound.play(SystemSoundType.click);
+    }
   }
 
   @override
@@ -119,11 +131,11 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
   void clearHistory() {
     state = state.copyWith(history: []);
     _saveHistoryList([]);
-    HapticFeedback.mediumImpact();
+    _triggerFeedback(true);
   }
 
   void restoreHistoryItem(HistoryItem item) {
-    HapticFeedback.mediumImpact();
+    _triggerFeedback(true);
     if (state.isScientific) {
       String current = state.formulaValue;
       if (state.shouldResetDisplay || current == '0' || current.isEmpty) {
@@ -160,7 +172,7 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
       shouldResetDisplay: false,
     );
     _resetAccountingState();
-    HapticFeedback.mediumImpact();
+    _triggerFeedback(true);
   }
 
   void setMode(bool isScientific) {
@@ -171,7 +183,7 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
 
   void toggleDegRad() {
     state = state.copyWith(isDegMode: !state.isDegMode);
-    HapticFeedback.lightImpact();
+    _triggerFeedback(false);
   }
 
   void _resetAccountingState() {
@@ -184,7 +196,7 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
 
   // Clear or Backspace keys
   void handleClear() {
-    HapticFeedback.mediumImpact();
+    _triggerFeedback(true);
     if (state.isScientific) {
       state = state.copyWith(
         displayValue: '0',
@@ -202,7 +214,7 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
   }
 
   void handleBackspace() {
-    HapticFeedback.lightImpact();
+    _triggerFeedback(false);
     if (state.isScientific) {
       String formula = state.formulaValue;
       if (formula.isNotEmpty) {
@@ -257,7 +269,7 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
   // ACCOUNTING MODE ENGINE
   // -------------------------------------------------------------
   void _handleAccountingKeyPress(String key) {
-    HapticFeedback.lightImpact();
+    _triggerFeedback(false);
 
     // Check if key is a digit or decimal point
     if (RegExp(r'[0-9.]').hasMatch(key)) {
@@ -476,7 +488,7 @@ class CalculatorNotifier extends Notifier<CalculatorState> {
   // SCIENTIFIC MODE ENGINE
   // -------------------------------------------------------------
   void _handleScientificKeyPress(String key) {
-    HapticFeedback.lightImpact();
+    _triggerFeedback(false);
 
     if (key == '=') {
       _evaluateScientific();

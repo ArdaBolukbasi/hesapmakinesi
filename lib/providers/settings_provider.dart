@@ -5,20 +5,24 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsState {
   final String theme; // 'light', 'dark', 'green', 'red'
-  final bool useCommaDecimal; // false: 1,500.50, true: 1.500,50
+  final bool enableVibration;
+  final bool enableSound;
 
   SettingsState({
     required this.theme,
-    required this.useCommaDecimal,
+    required this.enableVibration,
+    required this.enableSound,
   });
 
   SettingsState copyWith({
     String? theme,
-    bool? useCommaDecimal,
+    bool? enableVibration,
+    bool? enableSound,
   }) {
     return SettingsState(
       theme: theme ?? this.theme,
-      useCommaDecimal: useCommaDecimal ?? this.useCommaDecimal,
+      enableVibration: enableVibration ?? this.enableVibration,
+      enableSound: enableSound ?? this.enableSound,
     );
   }
 }
@@ -29,7 +33,8 @@ class SettingsNotifier extends Notifier<SettingsState> {
     Future.microtask(() => _loadSettings());
     return SettingsState(
       theme: 'dark',
-      useCommaDecimal: false,
+      enableVibration: true,
+      enableSound: true,
     );
   }
 
@@ -37,10 +42,12 @@ class SettingsNotifier extends Notifier<SettingsState> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final savedTheme = prefs.getString('settings_theme') ?? 'dark';
-      final savedUseCommaDecimal = prefs.getBool('settings_comma_decimal') ?? false;
+      final savedVibration = prefs.getBool('settings_vibration') ?? true;
+      final savedSound = prefs.getBool('settings_sound') ?? true;
       state = SettingsState(
         theme: savedTheme,
-        useCommaDecimal: savedUseCommaDecimal,
+        enableVibration: savedVibration,
+        enableSound: savedSound,
       );
     } catch (e) {
       // Handle loading failure gracefully
@@ -57,11 +64,21 @@ class SettingsNotifier extends Notifier<SettingsState> {
     }
   }
 
-  Future<void> setUseCommaDecimal(bool useComma) async {
-    state = state.copyWith(useCommaDecimal: useComma);
+  Future<void> setVibration(bool enabled) async {
+    state = state.copyWith(enableVibration: enabled);
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('settings_comma_decimal', useComma);
+      await prefs.setBool('settings_vibration', enabled);
+    } catch (e) {
+      // Handle saving failure gracefully
+    }
+  }
+
+  Future<void> setSound(bool enabled) async {
+    state = state.copyWith(enableSound: enabled);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('settings_sound', enabled);
     } catch (e) {
       // Handle saving failure gracefully
     }
