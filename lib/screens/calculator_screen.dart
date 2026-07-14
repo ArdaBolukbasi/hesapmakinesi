@@ -169,29 +169,49 @@ class CalculatorScreen extends ConsumerWidget {
             ),
             const Divider(height: 1),
 
-            // Vibration Toggle
-            SwitchListTile(
-              secondary: Icon(Icons.vibration_outlined, color: theme.colorScheme.primary),
-              title: const Text(
-                'Titreşim',
-                style: TextStyle(fontWeight: FontWeight.bold),
+            // Vibration Level Slider
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.vibration, color: theme.colorScheme.primary),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Titreşim Şiddeti',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                      ),
+                      const Spacer(),
+                      Text(
+                        '${settings.vibrationIntensity}',
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Slider(
+                    value: settings.vibrationIntensity.toDouble(),
+                    min: 0,
+                    max: 255,
+                    divisions: 255,
+                    onChanged: (val) {
+                      settingsNotifier.setVibrationIntensity(val.toInt());
+                    },
+                  ),
+                ],
               ),
-              subtitle: const Text(
-                'Tuş basışlarında titreşim geribildirimi',
-                style: TextStyle(fontSize: 12),
-              ),
-              value: settings.enableVibration,
-              onChanged: (val) {
-                settingsNotifier.setVibration(val);
-              },
             ),
             const Divider(height: 1),
 
             // Sound Toggle
             SwitchListTile(
-              secondary: Icon(Icons.volume_up_outlined, color: theme.colorScheme.primary),
+              secondary: Icon(Icons.volume_up, color: theme.colorScheme.primary),
               title: const Text(
-                'Ses Efekti',
+                'Tuş Sesleri',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               subtitle: const Text(
@@ -209,7 +229,7 @@ class CalculatorScreen extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.all(24.0),
               child: Text(
-                'v1.2.0 • Premium Calculator',
+                'v1.3.0 • Premium Calculator',
                 style: theme.textTheme.labelSmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                 ),

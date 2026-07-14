@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:vibration/vibration.dart';
 
 import '../providers/calculator_provider.dart';
 import '../providers/settings_provider.dart';
@@ -220,14 +221,30 @@ class _CalculatorButtonState extends ConsumerState<CalculatorButton> with Single
     _controller.reverse();
   }
 
-  void _triggerFeedbackAndTap() {
+  void _triggerFeedbackAndTap() async {
     final settings = ref.read(settingsProvider);
-    if (settings.enableVibration) {
-      HapticFeedback.lightImpact();
+
+    // 1. Trigger custom vibration amplitude using 'vibration' package
+    if (settings.vibrationIntensity > 0) {
+      try {
+        final hasVibrator = await Vibration.hasVibrator();
+        if (hasVibrator) {
+          final duration = 30 + ((settings.vibrationIntensity / 255) * 70).toInt();
+          Vibration.vibrate(
+            duration: duration,
+            amplitude: settings.vibrationIntensity,
+          );
+        }
+      } catch (e) {
+        // Safe fallback
+      }
     }
+
+    // 2. Play native system click sound immediately if settings.enableSound is active
     if (settings.enableSound) {
       SystemSound.play(SystemSoundType.click);
     }
+
     widget.onTap();
   }
 
