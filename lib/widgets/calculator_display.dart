@@ -1,6 +1,5 @@
 // File: lib/widgets/calculator_display.dart
 
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -71,45 +70,52 @@ class CalculatorDisplay extends ConsumerWidget {
           
           SizedBox(height: calcState.isScientific ? (isLandscape ? 4 : 8) : 0),
 
-          // Running Formula Display
+          // Running Formula Display (Upper Text wrapped in FittedBox for auto-shrinking)
           SizedBox(
             height: isLandscape ? 30 : 40,
             child: Align(
               alignment: Alignment.centerRight,
-              child: AutoSizeText(
-                calcState.formulaValue.isEmpty ? '' : calcState.formulaValue,
-                maxLines: 1,
-                minFontSize: 14,
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  color: isRetroGold
-                      ? const Color(0xFFB5AC75).withValues(alpha: 0.8)
-                      : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
-                  fontFamily: 'RobotoMono',
-                  fontWeight: FontWeight.w400,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerRight,
+                child: Text(
+                  calcState.formulaValue.isEmpty ? '' : calcState.formulaValue,
+                  maxLines: 1,
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    color: isRetroGold
+                        ? const Color(0xFFB5AC75).withValues(alpha: 0.8)
+                        : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                    fontFamily: 'RobotoMono',
+                    fontWeight: FontWeight.w400,
+                  ),
+                  textAlign: TextAlign.right,
                 ),
-                textAlign: TextAlign.right,
               ),
             ),
           ),
           SizedBox(height: isLandscape ? 4 : 8),
 
-          // Main Display (Input or Result)
+          // Main Display (Input or Result) (Lower Text wrapped in FittedBox for auto-shrinking)
           SizedBox(
             height: isLandscape ? 50 : 70,
             child: Align(
               alignment: Alignment.centerRight,
-              child: AutoSizeText(
-                calcState.displayValue,
-                maxLines: 1,
-                minFontSize: 20,
-                style: theme.textTheme.displayMedium?.copyWith(
-                  color: isRetroGold
-                      ? const Color(0xFFDBDBDB)
-                      : theme.colorScheme.onSurface,
-                  fontFamily: 'RobotoMono',
-                  fontWeight: FontWeight.w600,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerRight,
+                child: Text(
+                  calcState.displayValue,
+                  maxLines: 1,
+                  style: theme.textTheme.displayMedium?.copyWith(
+                    color: isRetroGold
+                        ? const Color(0xFFDBDBDB)
+                        : theme.colorScheme.onSurface,
+                    fontFamily: 'RobotoMono',
+                    fontWeight: FontWeight.w600,
+                    fontSize: isLandscape ? 34 : 40, // Slightly decreased base font size to fit long numbers better
+                  ),
+                  textAlign: TextAlign.right,
                 ),
-                textAlign: TextAlign.right,
               ),
             ),
           ),
